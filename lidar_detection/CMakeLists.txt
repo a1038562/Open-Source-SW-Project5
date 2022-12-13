@@ -7,7 +7,11 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   sensor_msgs
   message_generation
+  cv_bridge
 )
+
+find_package(PCL REQUIRED)
+find_package(OpenCV REQUIRED)
 
 add_message_files(
   FILES
@@ -22,17 +26,35 @@ generate_messages(
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES lidar_detection
-  CATKIN_DEPENDS roscpp sensor_msgs std_msgs
+  CATKIN_DEPENDS roscpp sensor_msgs std_msgs 
 )
 
-include_directories(
+
+file(GLOB_RECURSE project_HEADERS
+  "*.h"
+  "*.hpp"
+)
+
+include_directories(include
   ${catkin_INCLUDE_DIRS}
+  ${PCL_INCLUDE_DIRS}
+  ${OpenCV_INCLUDE_DIRS}
 )
 
-add_executable(${PROJECT_NAME}_node src/lidar_detect.cpp)
+add_executable(
+  ${PROJECT_NAME} 
+  src/Scan2PCL.cpp
+  src/Cluster.cpp
+  src/main.cpp
+)
 
-add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+set(PCL_INCLUDE_DIRS /usr/local/include/pcl-1.7 /usr/include/eigen3/)
 
-target_link_libraries(${PROJECT_NAME}_node
+add_dependencies(${PROJECT_NAME} ${catkin_EXPORTED_TARGETS})
+
+target_link_libraries(
+  ${PROJECT_NAME}
   ${catkin_LIBRARIES}
+  ${PCL_LIBRARIES}
+  ${OpenCV_LIBS}
 )
